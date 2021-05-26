@@ -1,0 +1,147 @@
+# ABSTRACT: A collection of cases where core Perl fails its "easy things should be easy" mantra (plus their remedies)
+# PODNAME: perleasyfail
+
+=head1 DESCRIPTION
+
+Early release.
+
+
+
+
+=head1 ARY (Arrays)
+
+
+
+
+=head2 ARY/IDENTIFY/1 (Check if something is an array)
+
+JavaScript:
+
+ foo.isArray()
+
+PHP:
+
+ is_array($foo)
+
+Python:
+
+ isinstance(foo, list)
+
+Ruby:
+
+ foo.kind_of? Array
+
+Perl:
+
+ ref($foo) eq 'ARRAY'
+
+The Perl version is not so bad brevity-wise, but: 1) a typo in C<'ARRAY'> will
+not be caught in compile-time; 2) it's slower; 3) it fails to recognize blessed
+array or tied array.
+
+Perl alternative #1:
+
+ use Scalar::Util qw(reftype);
+ reftype($foo) eq 'ARRAY'
+
+This can handle blessed array.
+
+Perl alternative #2:
+
+ use Ref::Util qw(is_arrayref);
+ is_arrayref($foo);
+
+This can handle blessed array.
+
+
+=head2 ARY/FINDELEM/1 (Check whether an item is in an array)
+
+JavaScript:
+
+ ary.includes(value)
+
+PHP:
+
+ in_array($value, $ary)
+ in_array($value, $ary, $strict)  # also check types, so 0 != "0"
+
+Python:
+
+ element in list
+
+Ruby:
+
+ ary.include? value
+
+Perl:
+
+ grep { $_ eq 'value' } @ary  # for string comparison
+ grep { $_ ==  value  } @ary  # for numeric comparison
+
+This is one of the cases where strongly-typed languages have an advantage
+because the user does not need to explicitly specify the operator to use. Perl
+has multiple equality operators and the user needs to specify which one she
+wants because the scalar can both be a number of a string.
+
+True, the Perl's C<grep> version is more flexible, but we're talking about easy
+things here. Plus there's another problem with C<grep>: it does not
+short-circuit. If you have a million-element array and the value you want is
+found in the first element, Perl will still continue to the end of the array.
+
+Alternative #1:
+
+ use List::Util qw(first);
+ first { $_ eq 'value' } @ary
+
+This solution solves the non-short-circuiting problem, but does not provide
+syntax brevity.
+
+Alternative #2:
+
+ use List::Util::Find qw(hasnum hasstr);
+ hasnum $num, @ary;
+ hasstr $str, @ary;
+
+
+
+
+=head1 HASH (Hashes)
+
+
+
+
+=head2 HASH/IDENTIFY/1 (Check if something is a hash)
+
+JavaScript (:
+
+ foo.isArray()
+
+Python:
+
+ isinstance(foo, list)
+
+Ruby:
+
+ foo.kind_of? Array
+
+Perl:
+
+ ref($foo) eq 'ARRAY'
+
+The Perl version is not so bad brevity-wise, but: 1) a typo in C<'ARRAY'> will
+not be caught in compile-time; 2) it's slower; 3) it fails to recognize blessed
+array or tied array.
+
+Alternative #1:
+
+ use Scalar::Util qw(reftype);
+ reftype($foo) eq 'ARRAY'
+
+This can handle blessed array.
+
+Alternative #2:
+
+ use Ref::Util qw(is_arrayref);
+ is_arrayref($foo);
+
+This can handle blessed array.
